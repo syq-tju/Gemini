@@ -1,23 +1,30 @@
 import requests
+import vertexai
 from vertexai.preview.generative_models import GenerativeModel, Image
+
+vertexai.init(project="decent-vertex-270815")
 
 def load_image_from_url(url):
     response = requests.get(url)
     return Image.from_bytes(response.content)
 
-def main():
-    model = GenerativeModel("wavegan")
-    image = load_image_from_url("https://upload.wikimedia.org/wikipedia/commons/4/47/PNG_transparency_demonstration_1.png")
-    
-    # Generate an image from the input
-    generated_image = model.generate(image)
-    generated_image.show()
-    
-    # Generate an image from the input with a different seed
-    generated_image = model.generate(image, seed=2)
-    generated_image.show()
-    
-if __name__ == "__main__":
-    main()
-    
-    
+landmark1 = load_image_from_url("https://storage.googleapis.com/cloud-samples-data/vertex-ai/llm/prompts/landmark1.png")
+landmark2 = load_image_from_url("https://storage.googleapis.com/cloud-samples-data/vertex-ai/llm/prompts/landmark2.png")
+landmark3 = load_image_from_url("https://www.pngkey.com/png/full/320-3208379_golden-gate-bridge-png-golden-gate-bridge.png")
+
+model = GenerativeModel("gemini-pro-vision")
+
+response = model.generate_content(
+    [
+        landmark1, "city: Rome, country: Italy, Landmark: Colosseum", 
+        landmark2, "city: Beijing, country: China, Landmark: Forbidden City", 
+        landmark3
+    ],
+)
+
+# Correct way to iterate over the results
+#for candidate in response.candidates:
+#    for text in candidate.text:
+#        print(text) 
+
+print(response.candidates[0].text)
